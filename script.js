@@ -44,8 +44,6 @@ async function faceRecognition() {
   const labeledFaceDescriptors = await getLabeledFaceDescriptions();
   const faceMatcher = new faceapi.FaceMatcher(labeledFaceDescriptors);
 
-  video.addEventListener("play", async () => {
-
     const canvas = faceapi.createCanvasFromMedia(video);
     document.body.append(canvas);
 
@@ -73,5 +71,4 @@ async function faceRecognition() {
         drawBox.draw(canvas);
       });
     }, 100);
-  });
 }
