@@ -43,6 +43,10 @@ function getLabeledFaceDescriptions() {
 async function faceRecognition() {
   const labeledFaceDescriptors = await getLabeledFaceDescriptions();
   const faceMatcher = new faceapi.FaceMatcher(labeledFaceDescriptors);
+  
+    video.addEventListener("playing", () => {
+    location.reload();
+  });
 
     const canvas = faceapi.createCanvasFromMedia(video);
     document.body.append(canvas);
