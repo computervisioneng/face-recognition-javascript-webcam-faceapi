@@ -4,9 +4,7 @@ Promise.all([
   faceapi.nets.ssdMobilenetv1.loadFromUri("/models"),
   faceapi.nets.faceRecognitionNet.loadFromUri("/models"),
   faceapi.nets.faceLandmark68Net.loadFromUri("/models"),
-])
-  .then(startWebcam)
-  .then(faceRecognition);
+]).then(startWebcam);
 
 function startWebcam() {
   navigator.mediaDevices
@@ -40,39 +38,35 @@ function getLabeledFaceDescriptions() {
   );
 }
 
-async function faceRecognition() {
+video.addEventListener("play", async () => {
   const labeledFaceDescriptors = await getLabeledFaceDescriptions();
   const faceMatcher = new faceapi.FaceMatcher(labeledFaceDescriptors);
-  
-    video.addEventListener("playing", () => {
-    location.reload();
-  });
 
-    const canvas = faceapi.createCanvasFromMedia(video);
-    document.body.append(canvas);
+  const canvas = faceapi.createCanvasFromMedia(video);
+  document.body.append(canvas);
 
-    const displaySize = { width: video.width, height: video.height };
-    faceapi.matchDimensions(canvas, displaySize);
+  const displaySize = { width: video.width, height: video.height };
+  faceapi.matchDimensions(canvas, displaySize);
 
-    setInterval(async () => {
-      const detections = await faceapi
-        .detectAllFaces(video)
-        .withFaceLandmarks()
-        .withFaceDescriptors();
+  setInterval(async () => {
+    const detections = await faceapi
+      .detectAllFaces(video)
+      .withFaceLandmarks()
+      .withFaceDescriptors();
 
-      const resizedDetections = faceapi.resizeResults(detections, displaySize);
+    const resizedDetections = faceapi.resizeResults(detections, displaySize);
 
-      canvas.getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
+    canvas.getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
 
-      const results = resizedDetections.map((d) => {
-        return faceMatcher.findBestMatch(d.descriptor);
+    const results = resizedDetections.map((d) => {
+      return faceMatcher.findBestMatch(d.descriptor);
+    });
+    results.forEach((result, i) => {
+      const box = resizedDetections[i].detection.box;
+      const drawBox = new faceapi.draw.DrawBox(box, {
+        label: result,
       });
-      results.forEach((result, i) => {
-        const box = resizedDetections[i].detection.box;
-        const drawBox = new faceapi.draw.DrawBox(box, {
-          label: result,
-        });
-        drawBox.draw(canvas);
-      });
-    }, 100);
-}
+      drawBox.draw(canvas);
+    });
+  }, 100);
+});
